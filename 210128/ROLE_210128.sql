@@ -1,0 +1,44 @@
+/*
+    ROLE
+    
+    여러 사용자와 다양한 권한을 효과적으로 관리하기 위해 서로 관련된 권한을 그룹화한 것
+    
+    CREATE ROLE role ~
+*/
+
+/*
+    암호를 지정한 롤과 지정하지 않은 롤 생성
+*/
+
+DESC SCOTT.EMP;
+
+SELECT JOB FROM SCOTT.EMP;
+
+-- 사무원 ROLE 생성
+
+CREATE ROLE RL_CLERK;
+
+CREATE ROLE RL_CLERK_PW
+IDENTIFIED BY 1234;
+
+/*
+    ROLL 에 권한 부여
+*/
+
+-- RL_CLERK_PW 롤에 CREATE SESSION 시스템 권한 부여
+
+GRANT CREATE SESSION TO RL_CLERK_PW;
+
+-- RL_CLERK_PW 롤에 TJOEUN 사용자의 모든 컬럼에 대한 
+-- SELECT, UPDATE, INSERT ECT (DML?) 객체 권한 부여
+
+GRANT SELECT, INSERT, DELETE ON TJOEUN.STUDENT TO RL_CLERK_PW;
+
+-- ROLE 에 ROLE 부여
+
+-- ROLE 조회하기 : ROLE_SYS_PRIVS
+
+SELECT * FROM ROLE_SYS_PRIVS;
+
+GRANT RL_CLERK TO RL_CLERK_PW;
+GRANT RL_CLERK TO TJOEUN;
