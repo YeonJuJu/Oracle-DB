@@ -1,0 +1,759 @@
+/*
+    7369	SMITH
+    7839	KING
+    7900	JAMES
+*/
+
+SELECT EMPNO, ENAME
+FROM EMP
+WHERE SAL < 1000 OR SAL > 3000; 
+
+-- 다음 쿼리문도 같은 결과 출력
+
+SELECT EMPNO, ENAME
+FROM EMP
+WHERE SAL NOT BETWEEN 1000 AND 3000;
+
+SELECT EMPNO, ENAME
+FROM EMP
+WHERE SAL IN (1000, 3000);
+
+SELECT EMPNO, ENAME
+FROM EMP
+WHERE SAL NOT IN (1000, 3000);
+
+-- 1000 보다 크거나 3000 보다 큰 것
+
+SELECT EMPNO, ENAME
+FROM EMP
+WHERE SAL > ANY (1000, 3000);
+
+---------------------------------------------------------------------------------------------------------------------
+
+SELECT * FROM EMP
+WHERE NVL(COMM, 0) > 0;
+
+-- 다음 쿼리문도 같은 결과 출력 NULL 은 0 보다 크지 않기 때문
+
+SELECT * FROM EMP
+WHERE COMM > 0;
+
+SELECT * FROM EMP
+WHERE COMM IS NOT NULL;
+
+SELECT * FROM EMP
+WHERE COMM IS NULL;
+
+SELECT * FROM EMP
+WHERE COMM > 0 OR COMM IS NOT NULL;
+
+---------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE TB2(
+    M1 NUMBER(1),
+    M2 VARCHAR2(3)
+);
+
+INSERT INTO TB2 VALUES(1, 'A');
+INSERT INTO TB2 VALUES(2, 'B');
+INSERT INTO TB2 VALUES(3, 'C');
+INSERT INTO TB2 VALUES(4, 'D');
+
+SELECT * FROM TB2
+WHERE (M1 = 1 AND M2 = 'A')
+      OR (M1 = 3 AND M2 = 'C');
+
+-- 다음 쿼리문도 같은 결과 출력
+-- IN 조건에서 다중 컬럼 사용
+
+SELECT * FROM TB2
+WHERE (M1, M2) IN ((1, 'A'), (3, 'C'));
+
+CREATE TABLE TB3(
+    M1 NUMBER PRIMARY KEY,
+    M2 VARCHAR2(2),
+    M3 VARCHAR2(4) NOT NULL
+);
+
+SELECT COUNT(*) FROM TB3;
+SELECT COUNT(M1) FROM TB3;
+SELECT COUNT(M2) FROM TB3;
+SELECT COUNT(M3) FROM TB3;
+
+---------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE TB4(
+    M1 NUMBER PRIMARY KEY,
+    M2 VARCHAR2(2)
+);
+
+INSERT INTO TB4 VALUES(1, 'A');
+INSERT INTO TB4 VALUES(2, 'A');
+INSERT INTO TB4 VALUES(3, 'B');
+INSERT INTO TB4 VALUES(4, 'C');
+
+SELECT * FROM TB4;
+
+/*
+    DECODE (COIUMN, a, A, b, B, default) : 만약 컬럼의 값이 a 이면 A 반환, b 이면 B 반환 둘 다 아니면 default 반환
+*/
+
+SELECT SUM(DECODE (M2, 'A', M1, 'B', 1)) AS RESULT FROM TB4;
+
+------------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE TB5(
+    M1 NUMBER(4),
+    M2 NUMBER(4),
+    M3 NUMBER(4)
+);
+
+INSERT INTO TB5 VALUES(1, 100, NULL);
+INSERT INTO TB5 VALUES(1, 150, NULL);
+INSERT INTO TB5 VALUES(2, NULL, 100);
+INSERT INTO TB5 VALUES(2, 50, 200);
+INSERT INTO TB5 VALUES(3, NULL, 300);
+
+SELECT * FROM TB5;
+
+-- MIN(), MAX() : NULL 은 비교 대상에서 제외
+
+SELECT M1, MIN(M2) + NVL(MAX(M3), 0) AS RESULT
+FROM TB5
+GROUP BY M1;
+
+------------------------------------------------------------------------------------------------------------------
+
+SELECT DEPTNO, COUNT(*) RESULT
+FROM EMP
+GROUP BY DEPTNO;
+
+SELECT MGR, MIN(SAL) RESULT
+FROM EMP
+GROUP BY MGR;
+
+SELECT DEPTNO, JOB
+FROM EMP
+GROUP BY DEPTNO, JOB;
+
+-- 다음 쿼리문은 오류 발생 : GROUP BY 절에서 사용한 컬럼을 SELCT 절에서도 사용해야 함
+
+SELECT JOB, HIREDATE
+FROM EMP
+GROUP BY JOB;
+
+------------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB6 PURGE;
+
+CREATE TABLE TB6(
+    M1 NUMBER(3),
+    M2 VARCHAR2(3),
+    M3 DATE,
+    M4 NUMBER(4)
+);
+
+INSERT INTO TB6
+VALUES(1, 'A', TO_DATE('2020-06-30 00:00:00', 'YYYY-MM-DD HH24:MI:SS'), 1000);
+
+INSERT INTO TB6
+VALUES(2, 'A', TO_DATE('2020-05-31 00:00:00', 'YYYY-MM-DD HH24:MI:SS'), 2000);
+
+INSERT INTO TB6
+VALUES(3, 'A', TO_DATE('2020-04-30 00:00:00', 'YYYY-MM-DD HH24:MI:SS'), 3000);
+
+INSERT INTO TB6
+VALUES(4, 'B', TO_DATE('2020-03-31 00:00:00', 'YYYY-MM-DD HH24:MI:SS'), 1000);
+
+SELECT * FROM TB6;
+
+SELECT M1 
+FROM TB6
+ORDER BY M2, M4 ASC, M3;
+
+------------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB7 PURGE;
+
+CREATE TABLE TB7(
+    M1 NUMBER(2),
+    M2 NUMBER(5, 2)
+);
+
+INSERT INTO TB7
+VALUES(1, 30.24);
+
+INSERT INTO TB7
+VALUES(2, 30.75);
+
+INSERT INTO TB7
+VALUES(3, 30.33);
+
+INSERT INTO TB7
+VALUES(4, 29.62);
+
+INSERT INTO TB7
+VALUES(5, 29.47);
+
+SELECT * FROM TB7;
+
+SELECT M1, M2
+FROM TB7
+ORDER BY TRUNC(M2, 0) ASC, ROUND(M2) DESC;
+
+------------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB8 PURGE;
+
+CREATE TABLE TB8(
+    M1 varchar2(10),
+    M2 VARCHAR2(10)
+);
+
+INSERT INTO TB8
+VALUES('A', 'XYZ');
+
+INSERT INTO TB8
+VALUES('ABC', 'X');
+
+INSERT INTO TB8
+VALUES('CBA', 'WX');
+
+INSERT INTO TB8
+VALUES('C', 'V');
+
+SELECT * FROM TB8;
+
+SELECT M1, M2
+FROM TB8
+ORDER BY SUBSTR(M1, 1, 1), LENGTH(M2);
+
+------------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB9 PURGE;
+
+CREATE TABLE TB9(
+    M1 NUMBER(2),
+    M2 VARCHAR2(2),
+    M3 NUMBER(5)
+);
+
+INSERT INTO TB9 VALUES(1, 'A', 1000);
+INSERT INTO TB9 VALUES(2, 'A', 2000);
+INSERT INTO TB9 VALUES(3, 'A', 2000);
+INSERT INTO TB9 VALUES(4, 'B', 3000);
+
+SELECT * FROM TB9;
+
+SELECT M3, M2, M1
+FROM TB9
+ORDER BY 2 DESC, 3 ASC, 1 DESC;
+
+------------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB10 PURGE;
+
+CREATE TABLE TB10(
+    M1 NUMBER(2),
+    M2 VARCHAR2(2)
+);
+
+CREATE TABLE TB11(
+    M1 NUMBER(2),
+    M2 NUMBER(2)
+);
+
+INSERT INTO TB10 VALUES(1, 'A');
+INSERT INTO TB10 VALUES(2, 'B');
+INSERT INTO TB10 VALUES(3, 'C');
+
+INSERT INTO TB11 VALUES(1, 1);
+INSERT INTO TB11 VALUES(1, 2);
+INSERT INTO TB11 VALUES(3, 1);
+INSERT INTO TB11 VALUES(3, 2);
+INSERT INTO TB11 VALUES(4, 1);
+
+SELECT * FROM TB10;
+SELECT * FROM TB11;
+
+SELECT COUNT(*) RESULT
+FROM TB10 A, TB11 B
+WHERE B.M1 = A.M1;
+
+-----------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB_ORDER PURGE;
+
+CREATE TABLE TB_ORDER(
+    ORDERNO NUMBER(5),
+    CUSTOMERNO NUMBER(2),
+    ORDERDATE DATE,
+    ORDERBILL NUMBER(6)
+);
+
+INSERT INTO TB_ORDER
+VALUES (501, 1, TO_DATE('20190501', 'YYYYMMDD'), 20000);
+
+INSERT INTO TB_ORDER
+VALUES (612, 1, TO_DATE('20190523', 'YYYYMMDD'), 5000);
+
+INSERT INTO TB_ORDER
+VALUES (728, 1, TO_DATE('20200311', 'YYYYMMDD'), 25000);
+
+INSERT INTO TB_ORDER
+VALUES (904, 1, TO_DATE('20200715', 'YYYYMMDD'), 10000);
+
+INSERT INTO TB_ORDER
+VALUES (404, 2, TO_DATE('20191208', 'YYYYMMDD'), 7000);
+
+INSERT INTO TB_ORDER
+VALUES (603, 3, TO_DATE('20190501', 'YYYYMMDD'), 6000);
+
+INSERT INTO TB_ORDER
+VALUES (807, 2, TO_DATE('20200527', 'YYYYMMDD'), 17000);
+
+SELECT * FROM TB_ORDER;
+
+SELECT MIN(주문합계금액) AS 최저주문합계금액
+FROM (SELECT A.CUSTOMERNO, A.ORDERDATE, SUM(B.ORDERBILL) AS 주문합계금액
+          FROM TB_ORDER A, TB_ORDER B
+          WHERE B.CUSTOMERNO = A.CUSTOMERNO);
+
+SELECT A.CUSTOMERNO, A.ORDERDATE, MIN(A.ORDERBILL) 주문금액, SUM(B.ORDERBILL) 주문합계금액
+FROM TB_ORDER A, TB_ORDER B
+WHERE B.CUSTOMERNO = A.CUSTOMERNO
+    AND B.ORDERDATE <= A.ORDERDATE
+GROUP BY A.CUSTOMERNO, A.ORDERDATE
+ORDER BY A.CUSTOMERNO, A.ORDERDATE;
+
+-----------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE CUSTOMER(
+    CNO NUMBER(2),
+    CNAME VARCHAR2(20)
+);
+
+CREATE TABLE ORDERTB(
+    ORDERNO NUMBER(5),
+    CNO NUMBER(2),
+    ORDERBILL 
+);
+
+INSERT INTO CUSTOMER
+VALUES(1, '이순신');
+
+INSERT INTO CUSTOMER
+VALUES(2, '강감찬');
+
+INSERT INTO CUSTOMER
+VALUES(3, '안중근');
+
+INSERT INTO CUSTOMER
+VALUES(4, '유관순');
+
+INSERT INTO ORDERTB
+VALUES(2001, 1, 40000);
+
+INSERT INTO ORDERTB
+VALUES(2002, 2, 15000);
+
+INSERT INTO ORDERTB
+VALUES(2003, 2, 7000);
+
+INSERT INTO ORDERTB
+VALUES(2004, 2, 8000);
+
+INSERT INTO ORDERTB
+VALUES(2005, 2, 20000);
+
+INSERT INTO ORDERTB
+VALUES(2006, 3, 5000);
+
+INSERT INTO ORDERTB
+VALUES(2007, 3, 9000);
+
+SELECT (SUM(B.ORDERBILL) / COUNT(DISTINCT A.CNO)) AS RESULT
+FROM CUSTOMER A, ORDERTB B
+WHERE B.CNO(+) = A.CNO
+    AND B.ORDERBILL(+) > 10000;
+
+SELECT COUNT(DISTINCT A.CNO) AS RESULT, SUM(B.ORDERBILL)
+FROM CUSTOMER A, ORDERTB B
+WHERE B.CNO(+) = A.CNO
+    AND B.ORDERBILL(+) > 10000;
+    
+-----------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB12 PURGE;
+DROP TABLE TB13 PURGE;
+
+CREATE TABLE TB12(
+    M1 NUMBER(3),
+    M2 VARCHAR2(3)
+);
+
+CREATE TABLE TB13(
+    M1 NUMBER(3),
+    M2 VARCHAR2(3)
+);
+
+INSERT INTO TB12 VALUES(1, 'A');
+INSERT INTO TB12 VALUES(2, 'B');
+INSERT INTO TB12 VALUES(3, 'C');
+INSERT INTO TB12 VALUES(4, 'D');
+
+INSERT INTO TB13 VALUES(1, 'A');
+INSERT INTO TB13 VALUES(1, 'B');
+INSERT INTO TB13 VALUES(2, 'A');
+INSERT INTO TB13 VALUES(3, 'B');
+INSERT INTO TB13 VALUES(3, 'C');
+
+-- JOIN 조건을 설정하지 않으면 카티션 곱 집합이 생성
+
+SELECT COUNT(*) RESULT
+FROM TB12 A, TB13 B
+WHERE A.M1 >= 2
+AND B.M2 IN ('A', 'C');
+
+-----------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB14 PURGE;
+DROP TABLE TB15 PURGE;
+
+CREATE TABLE TB14(
+    M1 NUMBER(3),
+    M2 VARCHAR2(3)
+);
+
+CREATE TABLE TB15(
+    M1 NUMBER(3),
+    M2 NUMBER(3)
+);
+
+INSERT INTO TB14 VALUES(1, 'A');
+INSERT INTO TB14 VALUES(2, 'B');
+INSERT INTO TB14 VALUES(3, 'C');
+INSERT INTO TB14 VALUES(4, 'D');
+
+INSERT INTO TB15 VALUES(1, 1);
+INSERT INTO TB15 VALUES(1, 1);
+INSERT INTO TB15 VALUES(2, 1);
+INSERT INTO TB15 VALUES(3, 2);
+INSERT INTO TB15 VALUES(4, 1);
+
+-- INNER JOIN : 각각의 공통된 행도 나옴
+-- ON 절에 조인 조건을 기술하고 WHERE 절에 일반 조건을 기술
+
+SELECT SUM(B.M2) AS RESULT
+FROM TB14 A INNER JOIN TB15 B ON B.M1 = A.M1
+WHERE A.M1>=2;
+
+SELECT *
+FROM TB14 A INNER JOIN TB15 B ON B.M1 = A.M1;
+
+-----------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB16 PURGE;
+DROP TABLE TB17 PURGE;
+
+CREATE TABLE TB16(
+    M1 NUMBER(3),
+    M2 VARCHAR2(3)
+);
+
+CREATE TABLE TB17(
+    M1 NUMBER(3),
+    M2 VARCHAR2(3)
+);
+
+INSERT INTO TB16 VALUES(1, 'A');
+INSERT INTO TB16 VALUES(2, 'B');
+INSERT INTO TB16 VALUES(3, 'C');
+INSERT INTO TB16 VALUES(4, 'D');
+
+INSERT INTO TB17 VALUES(1, 'A');
+INSERT INTO TB17 VALUES(1, 'B');
+INSERT INTO TB17 VALUES(2, 'B');
+INSERT INTO TB17 VALUES(3, 'C');
+INSERT INTO TB17 VALUES(3, 'A');
+INSERT INTO TB17 VALUES(4, 'B');
+
+-- NATURAL JOIN : 이름이 같은 컬럼으로 EQUIJOIN
+
+SELECT SUM(M1) AS RESULT
+FROM TB16 A NATURAL JOIN TB17 B;
+
+
+SELECT *
+FROM TB16 A NATURAL JOIN TB17 B;
+
+SELECT *
+FROM TB16 A INNER JOIN TB17 B ON B.M1 = A.M1;
+
+-----------------------------------------------------------------------------------------------------------------
+
+CREATE TABLE TB18(
+    CNO NUMBER(2),
+    CNAME VARCHAR2(20)
+);
+
+CREATE TABLE TB19(
+    ORDERNO NUMBER(5),
+    CNO NUMBER(2),
+    ORDERBILL NUMBER(10)
+);
+
+INSERT INTO TB18
+VALUES(1, '이순신');
+
+INSERT INTO TB18
+VALUES(2, '강감찬');
+
+INSERT INTO TB18
+VALUES(3, '안중근');
+
+INSERT INTO TB18
+VALUES(4, '유관순');
+
+INSERT INTO TB19
+VALUES(2001, 1, 40000);
+
+INSERT INTO TB19
+VALUES(2002, 2, 15000);
+
+INSERT INTO TB19
+VALUES(2003, 2, 7000);
+
+INSERT INTO TB19
+VALUES(2004, 2, 8000);
+
+INSERT INTO TB19
+VALUES(2005, 2, 20000);
+
+INSERT INTO TB19
+VALUES(2006, 3, 5000);
+
+INSERT INTO TB19
+VALUES(2007, 3, 9000);
+
+SELECT *
+FROM TB18 A NATURAL JOIN TB19 B;
+
+SELECT *
+FROM TB18 A INNER JOIN TB19 B ON B.CNO = A.CNO;
+
+-----------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB20 PURGE;
+DROP TABLE TB21 PURGE;
+
+CREATE TABLE TB20(
+    M1 NUMBER(4),
+    M2 VARCHAR2(1)
+);
+
+CREATE TABLE TB21(
+    M1 NUMBER(4),
+    M3 VARCHAR2(1)
+);
+
+INSERT INTO TB20 VALUES(1, 'A');
+INSERT INTO TB20 VALUES(2, 'B');
+INSERT INTO TB20 VALUES(3, 'C');
+INSERT INTO TB20 VALUES(4, 'D');
+
+INSERT INTO TB21 VALUES(1, 1);
+INSERT INTO TB21 VALUES(1, 1);
+INSERT INTO TB21 VALUES(2, 1);
+INSERT INTO TB21 VALUES(3, 2);
+INSERT INTO TB21 VALUES(4, 1);
+
+-- 다음 문장의 오류 : 기본 조인에서 식별자 사용
+
+SELECT A.M1, B.M3
+FROM TB20 A JOIN TB21 B USING (M1);
+
+-- 다음과 같이 고친다 (식별자 삭제)
+
+SELECT M1, M3
+FROM TB20 JOIN TB21 USING (M1);
+
+-- 혹은 다음과 같이 ON 사용
+
+SELECT A.M1, B.M3
+FROM TB20 A JOIN TB21 B ON (B.M1 = A.M1);
+
+-- 다음 문장의 오류 : 자연 조인에서 식별자 사용
+
+SELECT A.M1, B.M3
+FROM TB20 A NATURAL JOIN TB21 B;
+
+-- 다음과 같이 고친다 (식별자 삭제)
+
+SELECT M1, M3
+FROM TB20 NATURAL JOIN TB21;
+
+-----------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB22 PURGE;
+DROP TABLE TB23 PURGE;
+
+CREATE TABLE TB22(
+    M1 NUMBER(1),
+    M2 VARCHAR2(2)
+);
+
+CREATE TABLE TB23(
+    M1 NUMBER(1),
+    M2 VARCHAR2(2)
+);
+
+INSERT INTO TB22 VALUES(1, 'A');
+INSERT INTO TB22 VALUES(2, 'B');
+INSERT INTO TB22 VALUES(3, 'C');
+INSERT INTO TB22 VALUES(4, 'D');
+
+INSERT INTO TB23 VALUES(1, 'A');
+INSERT INTO TB23 VALUES(2, 'B');
+INSERT INTO TB23 VALUES(3, 'B');
+INSERT INTO TB23 VALUES(3, 'C');
+INSERT INTO TB23 VALUES(5, 'C');
+
+SELECT COUNT(A.M1) CNT_A, COUNT(B.M1) CNT_B
+FROM TB22 A RIGHT OUTER JOIN TB23 B
+    ON B.M1 = A.M1 
+WHERE B.M1 >= 3;
+
+SELECT *
+FROM TB22 A RIGHT OUTER JOIN TB23 B
+    ON B.M1 = A.M1 
+  AND B.M1 >= 3;
+
+-----------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB24 PURGE;
+
+CREATE TABLE TB24(
+    M1 VARCHAR2(10)
+);
+
+INSERT INTO TB24 VALUES('ABC');
+INSERT INTO TB24 VALUES('LVXYZ');
+INSERT INTO TB24 VALUES('HMNK');
+
+SELECT * FROM TB24;
+
+SELECT SUBSTR(M1, LENGTH(M1) - 1, 1) AS RESULT
+FROM TB24;
+
+-----------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB25 PURGE;
+
+CREATE TABLE TB25(
+    M1 NUMBER(10),
+    M2 NUMBER(10)
+);
+
+INSERT INTO TB25 VALUES(100, 50);
+INSERT INTO TB25 VALUES(NULL, 150);
+INSERT INTO TB25 VALUES(300, NULL);
+INSERT INTO TB25 VALUES(200, 100);
+
+-- NULLIF(A, B) : A==B 이면 NULL 반환, N!=B 이면 1 반환
+
+SELECT NVL(M1, 0) + NULLIF(M2, 100) AS RESULT
+FROM TB25;
+
+-----------------------------------------------------------------------------------------------------------------
+
+DROP TABLE CUMSTOM_DEPOSIT PURGE;
+
+CREATE TABLE CUMSTOM_DEPOSIT(
+    CNO NUMBER(2) PRIMARY KEY,
+    DEPOSIT NUMBER(10),
+    POINT NUMBER(8)
+);
+
+INSERT INTO CUMSTOM_DEPOSIT VALUES(1, 15000, 5000);
+INSERT INTO CUMSTOM_DEPOSIT VALUES(2, NULL, 25000);
+INSERT INTO CUMSTOM_DEPOSIT VALUES(3, 30000, NULL);
+INSERT INTO CUMSTOM_DEPOSIT VALUES(4, 20000, 0);
+
+SELECT COUNT(*) RESULT
+FROM CUMSTOM_DEPOSIT
+WHERE DEPOSIT + NVL(POINT, 0) >= 20000;
+
+-----------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB26 PURGE;
+
+CREATE TABLE TB26(
+    M1 NUMBER(1),
+    M2 VARCHAR2(2),
+    M3 NUMBER(5)
+);
+
+INSERT INTO TB26 VALUES(1, 'A', 1000);
+INSERT INTO TB26 VALUES(2, 'B', 800);
+INSERT INTO TB26 VALUES(3, 'C', NULL);
+INSERT INTO TB26 VALUES(4, 'D', 1200);
+INSERT INTO TB26 VALUES(5, 'E', 3000);
+INSERT INTO TB26 VALUES(6, 'F', 1500);
+
+-- 연산자 우선순위에 의해 뒤에 AND 연산 후에 OR 연산 수행
+
+SELECT SUM(M3) RESULT
+FROM TB26
+WHERE M1 >= 4
+       OR M2 IN ('A', 'B')
+    AND M3 NOT BETWEEN 1000 AND 2000;
+
+-----------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB27 PURGE;
+
+CREATE TABLE TB27(
+    M1 NUMBER(5),
+    M2 NUMBER(5)
+);
+
+INSERT INTO TB27
+VALUES(1000, 2000);
+
+INSERT INTO TB27
+VALUES(NULL, 2000);
+
+INSERT INTO TB27
+VALUES(3000, 4000);
+
+INSERT INTO TB27
+VALUES(1000, NULL);
+
+INSERT INTO TB27
+VALUES(2000, 0);
+
+
+-----------------------------------------------------------------------------------------------------------------
+
+DROP TABLE TB28 PURGE;
+
+CREATE TABLE TB28(
+    M1 VARCHAR2(20),
+    M2 VARCHAR2(20)
+);
+
+INSERT INTO TB28
+VALUES(12400, 125);
+
+INSERT INTO TB28
+VALUES(930, 12000);
+
+INSERT INTO TB28
+VALUES(4670, 920);
+
+INSERT INTO TB28
+VALUES(2340, 4700);
+
+SELECT MIN(M1) RESULT2, MAX(TO_NUMBER(M2)) RESULT2
+FROM TB28

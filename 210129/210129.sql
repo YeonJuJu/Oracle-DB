@@ -1,0 +1,128 @@
+-- 210129
+
+/* ========================================================
+    
+    동의어
+    
+    => 하나의 객체에 부여하는 다른 이름
+    
+======================================================== */
+
+-- T1 테이블 생성 --
+
+-- PRIMARY KEY : UNIQUE + NOT NULL
+
+CREATE TABLE T1 (
+        C1 NUMBER PRIMARY KEY,
+        C2 NUMBER (2)
+);
+
+SELECT COUNT(C1) + COUNT(DISTINCT C1) AS RESULT 
+FROM T1;
+
+INSERT INTO T1 VALUES(1, 1);
+INSERT INTO T1 VALUES(2, 2);
+INSERT INTO T1 VALUES(7, 3);
+INSERT INTO T1 VALUES(3, 4);
+INSERT INTO T1 VALUES(6, NULL);
+INSERT INTO T1 VALUES(5, 4);
+
+SELECT COUNT(C1) + COUNT(DISTINCT C1) AS RESULT 
+FROM T1;
+
+-- 오류가 발생하는 SQL 은?
+
+SELECT T1.* FROM T1;
+SELECT A.* FROM T1 A;
+SELECT T1.C1 FROM T1 A; -- 오류 발생 : 별칭 지정 경우 A.C1 처럼 별칭으로 컬럼 한정해야 함
+SELECT C1 FROM T1 A;
+
+-- TEST TABLE 생성
+
+CREATE TABLE TEST(
+    N1 NUMBER(3),
+    N2 NUMBER(3)
+);
+
+INSERT INTO TEST VALUES(100, NULL);
+INSERT INTO TEST VALUES(NULL, 200);
+INSERT INTO TEST VALUES(300, 400);
+
+SELECT * FROM TEST;
+
+SELECT (N1/100) * (N2/100) AS RESULT
+FROM TEST;
+
+DROP TABLE TEST PURGE;
+
+CREATE TABLE TEST(
+    M1 NUMBER(1),
+    M2 VARCHAR2(10),
+    M3 VARCHAR2(10)
+);
+
+INSERT INTO TEST VALUES(1, 'ABCD', 'AB');
+INSERT INTO TEST VALUES(2, 'EFGH', 'EF');
+
+-- 아래 수행 결과로 컬럼 개수가 다른 것은?
+
+SELECT * FROM TEST; -- 이것만 컬럼이 3, 나머지 2
+SELECT M1, M2 FROM TEST;
+SELECT M1 || M2, M3 AS RESULT FROM TEST;
+SELECT * FROM (SELECT M1, M2 FROM TEST);
+
+DROP TABLE TEST PURGE;
+
+CREATE TABLE TEST(
+    M1 VARCHAR2(10),
+    M2 NUMBER(20)
+);
+
+INSERT INTO TEST VALUES('ABCDEF', '000120300');
+INSERT INTO TEST VALUES('GHI', '0760500');
+
+SELECT * FROM TEST;
+
+-- LTRIM(column, character) : 맨 왼쪽부터 character를 지워나감. 다른 문자가 나오면 나머지 문자 반환
+
+SELECT LENGTH(SUBSTR(M1, 2, 4)) + LENGTH(LTRIM(M2, '0')) AS RESULT
+FROM TEST;
+
+SELECT FLOOR(14.5) RESULT FROM DUAL;
+SELECT CEIL(14.5) RESULT FROM DUAL;
+SELECT TRUNC(15.3, 0) RESULT FROM DUAL; --> .012345 (자릿수) 를 그냥 자르는 것
+SELECT ROUND(15.3) RESULT FROM DUAL;
+
+/* =================================================*/
+
+CREATE TABLE BIRTH(
+    BIRTHDATE DATE
+);
+
+INSERT INTO BIRTH
+VALUES (TO_DATE('2020-06-16 14:30:30', 'YYYY-MM-DD HH24:MI:SS'));
+
+SELECT ADD_MONTHS(TRUNC(BIRTHDATE, 'MM'), -1 * 12 ) AS RESULT --> 6월 뒤로 다 잘라서? -12
+FROM BIRTH;
+
+SELECT * FROM BIRTH;
+
+/* =================================================*/
+
+CREATE TABLE TB1(
+    M1 NUMBER (1),
+    M2 VARCHAR2(10)
+);
+
+INSERT INTO TB1 VALUES(1, 'ABC');
+INSERT INTO TB1 VALUES(2, NULL);
+INSERT INTO TB1 VALUES(3, 'CBA');
+
+SELECT * FROM TB1;
+
+SELECT CASE 
+            WHEN M1 = 3 THEN 'A'
+            WHEN SUBSTR(M2, 2, 1) = 'B' THEN 'B'
+            ELSE 'C'
+            END AS RESULT
+FROM TB1;
